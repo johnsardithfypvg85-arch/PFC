@@ -1,0 +1,92 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="1560" viewBox="0 0 1280 1560">
+  <defs>
+    <style>
+      .bg { fill: #f7f4ee; }
+      .title { font: 700 34px 'Microsoft YaHei', 'PingFang SC', sans-serif; fill: #1f2937; }
+      .subtitle { font: 500 18px 'Microsoft YaHei', 'PingFang SC', sans-serif; fill: #4b5563; }
+      .box { fill: #fffdf8; stroke: #8b5e34; stroke-width: 2.5; rx: 18; ry: 18; }
+      .box2 { fill: #fef6e8; stroke: #c47a2c; stroke-width: 2.5; rx: 18; ry: 18; }
+      .box3 { fill: #eef6ff; stroke: #336699; stroke-width: 2.5; rx: 18; ry: 18; }
+      .text { font: 600 22px 'Microsoft YaHei', 'PingFang SC', sans-serif; fill: #1f2937; }
+      .small { font: 500 18px 'Microsoft YaHei', 'PingFang SC', sans-serif; fill: #374151; }
+      .code { font: 600 18px Consolas, 'Courier New', monospace; fill: #7c2d12; }
+      .line { stroke: #6b7280; stroke-width: 4; fill: none; marker-end: url(#arrow); }
+      .dash { stroke: #94a3b8; stroke-width: 3; fill: none; stroke-dasharray: 8 8; marker-end: url(#arrow2); }
+    </style>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0,0 L12,6 L0,12 z" fill="#6b7280"/>
+    </marker>
+    <marker id="arrow2" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0,0 L12,6 L0,12 z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1280" height="1560"/>
+
+  <text class="title" x="640" y="56" text-anchor="middle">ADC 触发流程图</text>
+  <text class="subtitle" x="640" y="90" text-anchor="middle">Demo-PFC-CloseLoop / main.c + ePWM1 + ADCINT1 + ISR_ADC</text>
+
+  <rect class="box" x="330" y="120" width="620" height="90"/>
+  <text class="text" x="640" y="158" text-anchor="middle">main() 完成初始化并绑定中断向量</text>
+  <text class="small" x="640" y="188" text-anchor="middle">ADCINT1 → ISR_ADC</text>
+
+  <path class="line" d="M640 210 L640 250"/>
+
+  <rect class="box2" x="250" y="250" width="780" height="120"/>
+  <text class="text" x="640" y="292" text-anchor="middle">ePWM1 初始化</text>
+  <text class="small" x="640" y="322" text-anchor="middle">设置 PWM 周期、CMPB=650、使能 SOCA</text>
+  <text class="code" x="640" y="350" text-anchor="middle">EPwm1Regs.ETSEL.bit.SOCAEN = 1</text>
+
+  <path class="line" d="M640 370 L640 410"/>
+
+  <rect class="box2" x="250" y="410" width="780" height="150"/>
+  <text class="text" x="640" y="452" text-anchor="middle">ADC 初始化</text>
+  <text class="small" x="640" y="484" text-anchor="middle">SOC0 / SOC2 的触发源都选 ePWM1 SOCA</text>
+  <text class="code" x="640" y="516" text-anchor="middle">AdcRegs.ADCSOC0CTL.bit.TRIGSEL = 5</text>
+  <text class="code" x="640" y="544" text-anchor="middle">AdcRegs.ADCSOC2CTL.bit.TRIGSEL = 5</text>
+
+  <path class="line" d="M640 560 L640 600"/>
+
+  <rect class="box3" x="250" y="600" width="780" height="150"/>
+  <text class="text" x="640" y="642" text-anchor="middle">配置 ADC 中断条件</text>
+  <text class="small" x="640" y="674" text-anchor="middle">EOC3 完成后产生 ADCINT1，中断由 PIE Group1 INTx1 进入 CPU</text>
+  <text class="code" x="640" y="706" text-anchor="middle">AdcRegs.INTSEL1N2.bit.INT1SEL = 3</text>
+  <text class="code" x="640" y="734" text-anchor="middle">AdcRegs.INTSEL1N2.bit.INT1E = 1</text>
+
+  <path class="line" d="M640 750 L640 790"/>
+
+  <rect class="box" x="300" y="790" width="680" height="100"/>
+  <text class="text" x="640" y="832" text-anchor="middle">main() 使能 PIE / CPU 中断并打开 TBCLKSYNC</text>
+  <text class="small" x="640" y="862" text-anchor="middle">ePWM1 开始真正计数运行</text>
+
+  <path class="line" d="M640 890 L640 930"/>
+
+  <rect class="box2" x="325" y="930" width="630" height="90"/>
+  <text class="text" x="640" y="968" text-anchor="middle">ePWM1 计数到 CMPB 事件</text>
+  <text class="small" x="640" y="998" text-anchor="middle">SOCA 输出触发脉冲</text>
+
+  <path class="line" d="M640 1020 L640 1060"/>
+
+  <rect class="box3" x="150" y="1060" width="980" height="160"/>
+  <text class="text" x="640" y="1102" text-anchor="middle">ADC 采样序列开始</text>
+  <text class="small" x="640" y="1134" text-anchor="middle">SOC0 / SOC1 同步采样：MOS 电流 + 母线电压</text>
+  <text class="small" x="640" y="1166" text-anchor="middle">SOC2 / SOC3 同步采样：输入电压 L + 输入电压 N</text>
+  <text class="code" x="640" y="1198" text-anchor="middle">采样完成后写入 ADCRESULT0 ~ ADCRESULT3</text>
+
+  <path class="line" d="M640 1220 L640 1260"/>
+
+  <rect class="box" x="345" y="1260" width="590" height="90"/>
+  <text class="text" x="640" y="1298" text-anchor="middle">EOC3 完成 → ADCINT1 置位</text>
+  <text class="small" x="640" y="1328" text-anchor="middle">经 PIE Group1 INTx1 进入 ISR_ADC()</text>
+
+  <path class="line" d="M640 1350 L640 1390"/>
+
+  <rect class="box2" x="180" y="1390" width="920" height="130"/>
+  <text class="text" x="640" y="1432" text-anchor="middle">ISR_ADC 快环执行</text>
+  <text class="small" x="640" y="1464" text-anchor="middle">ADCSample → PhaseLockLoop → FeedCal → IrefCal → CurrentLoop → RegReflash</text>
+  <text class="small" x="640" y="1494" text-anchor="middle">最后清 ADCINT1 标志并 PIEACK，等待下一次 ePWM1 SOCA</text>
+
+  <path class="dash" d="M1030 298 C1140 298, 1140 1298, 935 1298"/>
+  <text class="small" x="1120" y="806" text-anchor="middle">主触发链</text>
+
+</svg>
